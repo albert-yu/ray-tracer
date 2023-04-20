@@ -1,7 +1,7 @@
-use sdl2::{render::WindowCanvas, rect::Point, video::Window, pixels::Color};
+use sdl2::{pixels::Color, rect::Point, render::WindowCanvas, video::Window};
 
 pub struct Renderer {
-    canvas: WindowCanvas
+    canvas: WindowCanvas,
 }
 
 impl Renderer {
@@ -31,13 +31,13 @@ impl Renderer {
     pub fn draw(&mut self) -> Result<(), String> {
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.clear();
-    
+
         self.canvas.set_draw_color(Color::WHITE);
         let point = Point::new(0, 0);
         self.draw_circle(point, 100)?;
-    
+
         self.canvas.present();
-    
+
         Ok(())
     }
 }
