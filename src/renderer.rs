@@ -31,11 +31,15 @@ impl Renderer {
     //     Ok(())
     // }
 
+    // fn draw_scaled_point(&mut self, point: Point, scale_factor: i32) {}
+
     fn draw_scene(&mut self) -> Result<(), String> {
+        const X_WIDTH: i32 = 300;
+        const Y_HEIGHT: i32 = 200;
         const X_MIN: i32 = -150;
-        const X_MAX: i32 = 150;
+        const X_MAX: i32 = X_MIN + X_WIDTH;
         const Y_MIN: i32 = -100;
-        const Y_MAX: i32 = 100;
+        const Y_MAX: i32 = Y_MIN + Y_HEIGHT;
         const Z_MIN: i32 = X_MIN;
         const Z_MAX: i32 = X_MAX;
         let spheres = [Sphere {
@@ -54,7 +58,12 @@ impl Renderer {
         //     },
         // };
 
-        let (canvas_h, canvas_w) = self.canvas.output_size()?;
+        let (canvas_w, canvas_h) = self.canvas.output_size()?;
+        let origin_x = (canvas_w / 2) as i32;
+        let origin_y = (canvas_h / 2) as i32;
+
+        let scale_factor = (canvas_w as i32) / X_WIDTH;
+
         for sphere in spheres {
             for x in X_MIN..X_MAX {
                 for y in Y_MIN..Y_MAX {
@@ -65,10 +74,9 @@ impl Renderer {
                             continue;
                         }
                         // project 3D point onto 2D plane (TODO: do this correctly)
-                        let origin_x = (canvas_w / 2) as i32;
-                        let origin_y = (canvas_h / 2) as i32;
-                        let draw_x = origin_x + x;
-                        let draw_y = origin_y + y;
+                        let draw_x = origin_x + x * scale_factor;
+                        let draw_y = origin_y + y * scale_factor;
+
                         self.canvas.draw_point(Point::new(draw_x, draw_y))?;
                     }
                 }
