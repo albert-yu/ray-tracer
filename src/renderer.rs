@@ -32,10 +32,10 @@ impl Renderer {
     // }
 
     fn draw_scene(&mut self) -> Result<(), String> {
-        const X_MIN: i32 = -400;
-        const X_MAX: i32 = 400;
-        const Y_MIN: i32 = -300;
-        const Y_MAX: i32 = 400;
+        const X_MIN: i32 = -150;
+        const X_MAX: i32 = 150;
+        const Y_MIN: i32 = -100;
+        const Y_MAX: i32 = 100;
         const Z_MIN: i32 = X_MIN;
         const Z_MAX: i32 = X_MAX;
         let spheres = [Sphere {
