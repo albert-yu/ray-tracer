@@ -7,31 +7,40 @@ pub struct Renderer {
     canvas: WindowCanvas,
 }
 
+struct PointFloat {
+    pub x: f32,
+    pub y: f32,
+}
+
 impl Renderer {
     pub fn new(window: Window) -> Result<Renderer, String> {
         let canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
         Ok(Renderer { canvas })
     }
 
-    // fn draw_circle(&mut self, origin: Point, diameter: i32) -> Result<(), String> {
-    //     let radius = diameter / 2;
-    //     let center = Point::new(origin.x + radius, origin.y + radius);
-    //     self.canvas.draw_point(center)?;
-    //     // iterate row-wise
-    //     let radius_squared = radius.pow(2);
-    //     for row in origin.x..diameter {
-    //         for col in origin.y..diameter {
-    //             let distance_squared = (center.x - row).pow(2) + (center.y - col).pow(2);
-    //             if distance_squared <= radius_squared {
-    //                 let fill_point = Point::new(row, col);
-    //                 self.canvas.draw_point(fill_point)?;
-    //             }
-    //         }
-    //     }
-    //     Ok(())
-    // }
+    fn draw_scaled_point(&mut self, point: PointFloat, scale_factor: f32) -> Result<(), String> {
+        let x = point.x;
+        let y = point.y;
+        let rounded_x = x.round() as i32;
+        let rounded_y = y.round() as i32;
+        let scale_rounded = scale_factor.round() as i32;
 
-    // fn draw_scaled_point(&mut self, point: Point, scale_factor: i32) {}
+        let pixels_to_draw = scale_rounded.pow(2);
+        let mut points: Vec<Point> = Vec::with_capacity(pixels_to_draw as usize);
+        points.push(Point::new(rounded_x, rounded_y));
+        // expand to the right and down
+        let mut y_offset = 0;
+        for i in 1..pixels_to_draw {
+            let x_offset = i % scale_rounded;
+            if x_offset == 0 {
+                y_offset += 1;
+            }
+            points.push(Point::new(rounded_x + x_offset, rounded_y + y_offset));
+        }
+
+        self.canvas.draw_points(points.as_slice())?;
+        Ok(())
+    }
 
     fn draw_scene(&mut self) -> Result<(), String> {
         const X_WIDTH: i32 = 300;
@@ -62,7 +71,7 @@ impl Renderer {
         let origin_x = (canvas_w / 2) as i32;
         let origin_y = (canvas_h / 2) as i32;
 
-        let scale_factor = (canvas_w as i32) / X_WIDTH;
+        let scale_factor = (canvas_w as f32) / X_WIDTH as f32;
 
         for sphere in spheres {
             for x in X_MIN..X_MAX {
@@ -74,10 +83,16 @@ impl Renderer {
                             continue;
                         }
                         // project 3D point onto 2D plane (TODO: do this correctly)
-                        let draw_x = origin_x + x * scale_factor;
-                        let draw_y = origin_y + y * scale_factor;
+                        let draw_x = origin_x as f32 + x as f32 * scale_factor;
+                        let draw_y = origin_y as f32 + y as f32 * scale_factor;
 
-                        self.canvas.draw_point(Point::new(draw_x, draw_y))?;
+                        self.draw_scaled_point(
+                            PointFloat {
+                                x: draw_x,
+                                y: draw_y,
+                            },
+                            scale_factor,
+                        )?
                     }
                 }
             }
