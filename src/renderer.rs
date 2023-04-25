@@ -119,7 +119,7 @@ impl Renderer {
                         let t = f32::min(t_plus, t_minus);
                         match min_t {
                             Some(value) => {
-                                if t < value {
+                                if t < value && t > 0.0 {
                                     min_t = Some(t);
                                     found_sphere_index = Some(index);
                                 }
