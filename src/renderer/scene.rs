@@ -46,13 +46,6 @@ impl Sub for Vec3 {
     }
 }
 
-// pub fn distance_squared(point1: &Point3D, point2: &Point3D) -> f32 {
-//     let diff_x = point1.x - point2.x;
-//     let diff_y = point1.y - point2.y;
-//     let diff_z = point1.z - point2.z;
-//     return diff_x * diff_x + diff_y * diff_y + diff_z * diff_z;
-// }
-
 pub struct Camera {
     pub position: Vec3,
 
