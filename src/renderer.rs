@@ -39,8 +39,20 @@ impl Renderer {
                 y: 0.0,
                 z: 0.0,
             },
-            radius: 200.0,
+            radius: 5.0,
         };
+
+        let sphere_2 = Sphere {
+            center: Vec3 {
+                x: -10.0,
+                y: 0.0,
+                z: 15.0,
+            },
+            radius: 5.0,
+        };
+
+        let spheres = [&sphere_1, &sphere_2];
+        let colors = [Color::GREEN, Color::CYAN];
 
         let camera = Camera {
             position: Vec3 {
@@ -74,7 +86,6 @@ impl Renderer {
 
         let center_x = scene.screen_width / 2;
         let center_y = scene.screen_height / 2;
-        let r = sphere_1.radius;
 
         for x in 0..scene.screen_width {
             for y in 0..scene.screen_height {
@@ -87,17 +98,52 @@ impl Renderer {
                     y: y_float,
                     z: screen_z,
                 };
-                let c = scene.camera.position;
-                let d = c - screen_point;
-                let square_completion = 4.0 * (c * d) * (c * d) - 4.0 * (d * d) * (c * c - r);
-                if square_completion >= 0.0 {
-                    self.draw_scaled_point(
-                        PointFloat {
-                            x: x as f32,
-                            y: y as f32,
-                        },
-                        scale_factor,
-                    )?
+                let o = scene.camera.position;
+                let d = o - screen_point;
+                let mut found_sphere_index: Option<usize> = None;
+                let mut min_t: Option<f32> = None;
+                for (index, sphere) in spheres.iter().enumerate() {
+                    let r = sphere.radius;
+                    let c = sphere.center;
+                    let to_center = o - c;
+                    let b = 2.0 * (to_center * d);
+                    let a = d * d;
+                    let c = to_center * to_center - r * r;
+                    // b^2 - 4ac
+                    let square_completion = b * b - 4.0 * a * c;
+                    if square_completion >= 0.0 {
+                        // compute parameter t
+                        let square_root = square_completion.sqrt();
+                        let t_plus = (-b + square_root) / (2.0 * a);
+                        let t_minus = (-b - square_root) / (2.0 * a);
+                        let t = f32::min(t_plus, t_minus);
+                        match min_t {
+                            Some(value) => {
+                                if t < value {
+                                    min_t = Some(t);
+                                    found_sphere_index = Some(index);
+                                }
+                            }
+                            None => {
+                                min_t = Some(t);
+                                found_sphere_index = Some(index);
+                            }
+                        }
+                    }
+                }
+                match found_sphere_index {
+                    Some(value) => {
+                        let color = colors[value];
+                        self.canvas.set_draw_color(color);
+                        self.draw_scaled_point(
+                            PointFloat {
+                                x: x as f32,
+                                y: y as f32,
+                            },
+                            scale_factor,
+                        )?
+                    }
+                    None => {}
                 }
             }
         }
