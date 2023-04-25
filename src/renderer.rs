@@ -1,4 +1,4 @@
-use sdl2::{pixels::Color, rect::Point, render::WindowCanvas, video::Window};
+use sdl2::{pixels::Color, rect::Rect, render::WindowCanvas, video::Window};
 
 mod scene;
 use scene::{Sphere, Vec3};
@@ -23,24 +23,26 @@ impl Renderer {
     fn draw_scaled_point(&mut self, point: PointFloat, scale_factor: f32) -> Result<(), String> {
         let x = point.x;
         let y = point.y;
-        let rounded_x = x.round() as i32;
-        let rounded_y = y.round() as i32;
-        let scale_rounded = scale_factor.round() as i32;
+        let scale_rounded = scale_factor.round() as u32;
+        let draw_x = (x * scale_factor).round() as i32;
+        let draw_y = (y * scale_factor).round() as i32;
 
-        let pixels_to_draw = scale_rounded * scale_rounded;
-        let mut points: Vec<Point> = Vec::with_capacity(pixels_to_draw as usize);
-        points.push(Point::new(rounded_x, rounded_y));
-        // expand to the right and down
-        let mut y_offset = 0;
-        for i in 1..pixels_to_draw {
-            let x_offset = i % scale_rounded;
-            if x_offset == 0 {
-                y_offset += 1;
-            }
-            points.push(Point::new(rounded_x + x_offset, rounded_y + y_offset));
-        }
+        // let pixels_to_draw = scale_rounded * scale_rounded;
+        // let mut points: Vec<Point> = Vec::with_capacity(pixels_to_draw as usize);
+        // points.push(Point::new(rounded_x, rounded_y));
+        // // expand to the right and down
+        // let mut y_offset = 0;
+        // for i in 1..pixels_to_draw {
+        //     let x_offset = i % scale_rounded;
+        //     if x_offset == 0 {
+        //         y_offset += 1;
+        //     }
+        //     points.push(Point::new(rounded_x + x_offset, rounded_y + y_offset));
+        // }
 
-        self.canvas.draw_points(points.as_slice())?;
+        // self.canvas.draw_points(points.as_slice())?;
+        self.canvas
+            .fill_rect(Rect::new(draw_x, draw_y, scale_rounded, scale_rounded))?;
         Ok(())
     }
 
@@ -51,7 +53,7 @@ impl Renderer {
                 y: 0.0,
                 z: 0.0,
             },
-            radius: 5.0,
+            radius: 200.0,
         };
 
         let camera = Camera {
@@ -99,10 +101,11 @@ impl Renderer {
                     y: y_float,
                     z: screen_z,
                 };
+                // println!("screen_point: {}", screen_point);
                 let c = scene.camera.position;
                 let d = c - screen_point;
-                let square_completion = (c * d) * (c * d) - 4.0 * (d * d) * (c * c - r);
-                println!("c: {}, d: {}", c, d);
+                let square_completion = 4.0 * (c * d) * (c * d) - 4.0 * (d * d) * (c * c - r);
+                // println!("c: {}, d: {}, sq: {}", c, d, square_completion);
                 if square_completion >= 0.0 {
                     self.draw_scaled_point(
                         PointFloat {
