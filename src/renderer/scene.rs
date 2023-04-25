@@ -1,41 +1,73 @@
+use std::fmt::Display;
+use std::ops::{Add, Mul, Sub};
+
 /// A 3D point
-pub struct Point3D {
-    pub x: i32,
-    pub y: i32,
-    pub z: i32,
+#[derive(Clone, Copy)]
+pub struct Vec3 {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
-// fn dot_product(one: Point3D, other: Point3D) -> i32 {
-//     return one.x * other.x + one.y * other.y + one.z * other.z;
-// }
+impl Vec3 {}
 
-pub fn distance_squared(point1: &Point3D, point2: &Point3D) -> i32 {
-    return (point1.x - point2.x).pow(2)
-        + (point1.y - point2.y).pow(2)
-        + (point1.z - point2.z).pow(2);
+impl Display for Vec3 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        return write!(f, "({}, {}, {})", self.x, self.y, self.z);
+    }
 }
 
-// pub struct Camera {
-//     pub position: Point3D,
+impl Add for Vec3 {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        Vec3 {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
+}
 
-//     /// Any point along the vector
-//     /// running from `position`
-//     /// to the camera's "target"
-//     pub target: Point3D,
+impl Mul for Vec3 {
+    type Output = f32;
+    fn mul(self, rhs: Self) -> Self::Output {
+        return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z;
+    }
+}
+
+impl Sub for Vec3 {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
+        Vec3 {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+        }
+    }
+}
+
+// pub fn distance_squared(point1: &Point3D, point2: &Point3D) -> f32 {
+//     let diff_x = point1.x - point2.x;
+//     let diff_y = point1.y - point2.y;
+//     let diff_z = point1.z - point2.z;
+//     return diff_x * diff_x + diff_y * diff_y + diff_z * diff_z;
 // }
 
-// impl Camera {
-//     fn new(position: Point3D, target: Point3D) -> Result<Camera, String> {
-//         let camera = Camera { position, target };
-//         Ok(camera)
-//     }
-// }
+pub struct Camera {
+    pub position: Vec3,
+
+    pub up: Vec3,
+    pub right: Vec3,
+}
 
 pub struct Sphere {
-    pub center: Point3D,
-    pub radius: i32,
+    pub center: Vec3,
+    pub radius: f32,
 }
 
-// pub struct Scene {
-//     pub camera: Camera,
-// }
+pub struct Scene {
+    pub camera: Camera,
+    pub screen_width: i32,
+    pub screen_height: i32,
+    pub focal_distance: f32,
+}

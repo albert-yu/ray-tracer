@@ -1,7 +1,9 @@
 use sdl2::{pixels::Color, rect::Point, render::WindowCanvas, video::Window};
 
 mod scene;
-use scene::{distance_squared, Point3D, Sphere};
+use scene::{Sphere, Vec3};
+
+use crate::renderer::scene::{Camera, Scene};
 
 pub struct Renderer {
     canvas: WindowCanvas,
@@ -25,7 +27,7 @@ impl Renderer {
         let rounded_y = y.round() as i32;
         let scale_rounded = scale_factor.round() as i32;
 
-        let pixels_to_draw = scale_rounded.pow(2);
+        let pixels_to_draw = scale_rounded * scale_rounded;
         let mut points: Vec<Point> = Vec::with_capacity(pixels_to_draw as usize);
         points.push(Point::new(rounded_x, rounded_y));
         // expand to the right and down
@@ -43,57 +45,72 @@ impl Renderer {
     }
 
     fn draw_scene(&mut self) -> Result<(), String> {
-        const X_WIDTH: i32 = 300;
-        const Y_HEIGHT: i32 = 200;
-        const X_MIN: i32 = -150;
-        const X_MAX: i32 = X_MIN + X_WIDTH;
-        const Y_MIN: i32 = -100;
-        const Y_MAX: i32 = Y_MIN + Y_HEIGHT;
-        const Z_MIN: i32 = X_MIN;
-        const Z_MAX: i32 = X_MAX;
-        let spheres = [Sphere {
-            center: Point3D { x: 0, y: 0, z: 0 },
-            radius: 50,
-        }];
+        let sphere_1 = Sphere {
+            center: Vec3 {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            radius: 5.0,
+        };
 
-        // let scene = Scene {
-        //     camera: Camera {
-        //         position: Point3D {
-        //             x: 0,
-        //             y: 0,
-        //             z: Z_MAX,
-        //         },
-        //         target: Point3D { x: 0, y: 0, z: 0 },
-        //     },
-        // };
+        let camera = Camera {
+            position: Vec3 {
+                x: 0.0,
+                y: 0.0,
+                z: -20.0,
+            },
+            up: Vec3 {
+                x: 0.0,
+                y: 1.0,
+                z: 0.0,
+            },
+            right: Vec3 {
+                x: 1.0,
+                y: 0.0,
+                z: 0.0,
+            },
+        };
 
-        let (canvas_w, canvas_h) = self.canvas.output_size()?;
-        let origin_x = (canvas_w / 2) as i32;
-        let origin_y = (canvas_h / 2) as i32;
+        let scene = Scene {
+            camera,
+            focal_distance: 10.0,
+            screen_width: 64,
+            screen_height: 48,
+        };
 
-        let scale_factor = (canvas_w as f32) / X_WIDTH as f32;
+        let (canvas_w, _canvas_h) = self.canvas.output_size()?;
 
-        for sphere in spheres {
-            for x in X_MIN..X_MAX {
-                for y in Y_MIN..Y_MAX {
-                    for z in Z_MIN..Z_MAX {
-                        let current_point = Point3D { x, y, z };
-                        let dist_squared = distance_squared(&current_point, &sphere.center);
-                        if dist_squared > sphere.radius.pow(2) {
-                            continue;
-                        }
-                        // project 3D point onto 2D plane (TODO: do this correctly)
-                        let draw_x = origin_x as f32 + x as f32 * scale_factor;
-                        let draw_y = origin_y as f32 + y as f32 * scale_factor;
+        let scale_factor = (canvas_w as f32) / scene.screen_width as f32;
+        let screen_z = scene.camera.position.z + scene.focal_distance;
 
-                        self.draw_scaled_point(
-                            PointFloat {
-                                x: draw_x,
-                                y: draw_y,
-                            },
-                            scale_factor,
-                        )?
-                    }
+        let center_x = scene.screen_width / 2;
+        let center_y = scene.screen_height / 2;
+        let r = sphere_1.radius;
+
+        for x in 0..scene.screen_width {
+            for y in 0..scene.screen_height {
+                let x_offset = x - center_x;
+                let y_offset = y - center_y;
+                let x_float = x_offset as f32;
+                let y_float = y_offset as f32;
+                let screen_point = Vec3 {
+                    x: x_float,
+                    y: y_float,
+                    z: screen_z,
+                };
+                let c = scene.camera.position;
+                let d = c - screen_point;
+                let square_completion = (c * d) * (c * d) - 4.0 * (d * d) * (c * c - r);
+                println!("c: {}, d: {}", c, d);
+                if square_completion >= 0.0 {
+                    self.draw_scaled_point(
+                        PointFloat {
+                            x: x as f32,
+                            y: y as f32,
+                        },
+                        scale_factor,
+                    )?
                 }
             }
         }
@@ -106,8 +123,6 @@ impl Renderer {
         self.canvas.clear();
 
         self.canvas.set_draw_color(Color::WHITE);
-        // let point = Point::new(0, 0);
-        // self.draw_circle(point, 100)?;
 
         self.draw_scene()?;
         self.canvas.present();
