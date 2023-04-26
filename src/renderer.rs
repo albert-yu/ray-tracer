@@ -14,6 +14,23 @@ struct PointFloat {
     pub y: f32,
 }
 
+/**
+ * Returns minimum of two numbers, but only if minimum is positive.
+ * Returns if neither number is positive.
+ */
+fn min_positive(x: f32, y: f32) -> Option<f32> {
+    if x >= 0.0 && y >= 0.0 {
+        return Some(f32::min(x, y));
+    }
+    if y >= 0.0 {
+        return Some(y);
+    }
+    if x >= 0.0 {
+        return Some(x);
+    }
+    return None;
+}
+
 impl Renderer {
     pub fn new(window: Window) -> Result<Renderer, String> {
         let canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
@@ -116,16 +133,19 @@ impl Renderer {
                         let square_root = square_completion.sqrt();
                         let t_plus = (-b + square_root) / (2.0 * a);
                         let t_minus = (-b - square_root) / (2.0 * a);
-                        let t = f32::min(t_plus, t_minus);
+                        let t = min_positive(t_plus, t_minus);
                         match min_t {
-                            Some(value) => {
-                                if t < value && t > 0.0 {
-                                    min_t = Some(t);
-                                    found_sphere_index = Some(index);
+                            Some(value) => match t {
+                                Some(t_val) => {
+                                    if t_val < value {
+                                        min_t = Some(t_val);
+                                        found_sphere_index = Some(index);
+                                    }
                                 }
-                            }
+                                None => {}
+                            },
                             None => {
-                                min_t = Some(t);
+                                min_t = t;
                                 found_sphere_index = Some(index);
                             }
                         }
