@@ -62,7 +62,7 @@ impl Renderer {
         let sphere_2 = Sphere {
             center: Vec3 {
                 x: -10.0,
-                y: 0.0,
+                y: 10.0,
                 z: 15.0,
             },
             radius: 5.0,
@@ -112,7 +112,7 @@ impl Renderer {
         for x in 0..scene.screen_width {
             for y in 0..scene.screen_height {
                 let x_offset = x - center_x;
-                let y_offset = y - center_y;
+                let y_offset = center_y - y;
                 let x_float = x_offset as f32;
                 let y_float = y_offset as f32;
                 let screen_point = Vec3 {
