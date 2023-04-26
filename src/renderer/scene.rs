@@ -9,7 +9,15 @@ pub struct Vec3 {
     pub z: f32,
 }
 
-impl Vec3 {}
+impl Vec3 {
+    pub fn scale(&self, scalar: f32) -> Self {
+        return Vec3 {
+            x: self.x * scalar,
+            y: self.y * scalar,
+            z: self.z * scalar,
+        };
+    }
+}
 
 impl Display for Vec3 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

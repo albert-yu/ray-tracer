@@ -14,21 +14,30 @@ struct PointFloat {
     pub y: f32,
 }
 
-/**
- * Returns minimum of two numbers, but only if minimum is positive.
- * Returns if neither number is positive.
- */
-fn min_positive(x: f32, y: f32) -> Option<f32> {
-    if x >= 0.0 && y >= 0.0 {
-        return Some(f32::min(x, y));
+struct RGBFloat {
+    r: f32,
+    g: f32,
+    b: f32,
+}
+
+impl RGBFloat {
+    /// Scalar is usually between 0 and 1
+    pub fn scale(&self, scalar: f32) -> Self {
+        RGBFloat {
+            r: self.r * scalar,
+            g: self.g * scalar,
+            b: self.b * scalar,
+        }
     }
-    if y >= 0.0 {
-        return Some(y);
+
+    pub fn to_color(&self) -> Color {
+        Color {
+            r: self.r as u8,
+            g: self.g as u8,
+            b: self.b as u8,
+            a: 0xff,
+        }
     }
-    if x >= 0.0 {
-        return Some(x);
-    }
-    return None;
 }
 
 impl Renderer {
@@ -69,7 +78,18 @@ impl Renderer {
         };
 
         let spheres = [&sphere_1, &sphere_2];
-        let colors = [Color::GREEN, Color::CYAN];
+        let colors = [
+            RGBFloat {
+                r: 0.0,
+                g: 255.0,
+                b: 0.0,
+            },
+            RGBFloat {
+                r: 0.0,
+                g: 255.0,
+                b: 255.0,
+            },
+        ];
 
         let camera = Camera {
             position: Vec3 {
@@ -91,9 +111,9 @@ impl Renderer {
 
         let scene = Scene {
             light: Vec3 {
-                x: -40.0,
-                y: 50.0,
-                z: 0.0,
+                x: 0.0,
+                y: 100.0,
+                z: -200.0,
             },
             camera,
             focal_distance: 10.0,
@@ -138,36 +158,60 @@ impl Renderer {
                         let square_root = square_completion.sqrt();
                         let t_plus = (-b + square_root) / (2.0 * a);
                         let t_minus = (-b - square_root) / (2.0 * a);
-                        let t = min_positive(t_plus, t_minus);
+                        let ray_plus = d.scale(t_plus);
+                        let ray_minus = d.scale(t_minus);
+                        // pick closer
+                        let dist_plus = ray_plus * ray_plus;
+                        let dist_minus = ray_minus * ray_minus;
+                        let t = if dist_minus < dist_plus {
+                            t_minus
+                        } else {
+                            t_plus
+                        };
                         match min_t {
-                            Some(value) => match t {
-                                Some(t_val) => {
-                                    if t_val < value {
-                                        min_t = Some(t_val);
-                                        found_sphere_index = Some(index);
-                                    }
+                            Some(value) => {
+                                if t < value {
+                                    min_t = Some(t);
+                                    found_sphere_index = Some(index);
                                 }
-                                None => {}
-                            },
+                            }
                             None => {
-                                min_t = t;
+                                min_t = Some(t);
                                 found_sphere_index = Some(index);
                             }
                         }
                     }
                 }
                 match found_sphere_index {
-                    Some(value) => {
-                        let color = colors[value];
-                        self.canvas.set_draw_color(color);
-                        self.draw_scaled_point(
-                            PointFloat {
-                                x: x as f32,
-                                y: y as f32,
-                            },
-                            scale_factor,
-                        )?
-                    }
+                    Some(index) => match min_t {
+                        Some(t) => {
+                            let rgb = &colors[index];
+                            let sphere = spheres[index];
+                            let collision_point = scene.camera.position + d.scale(t);
+                            let light_to_collision = scene.light - collision_point;
+                            // using a nice property of spheres--any vector from surface to center
+                            // is orthogonal to tangent plane
+
+                            let normal = collision_point - sphere.center;
+                            let unit_normal = normal.scale(1.0 / (normal * normal));
+                            let collision_norm = light_to_collision
+                                .scale(1.0 / (light_to_collision * light_to_collision));
+
+                            let color_intensity_factor = unit_normal * collision_norm;
+
+                            let adjusted_rgb = rgb.scale(color_intensity_factor);
+                            let color = adjusted_rgb.to_color();
+                            self.canvas.set_draw_color(color);
+                            self.draw_scaled_point(
+                                PointFloat {
+                                    x: x as f32,
+                                    y: y as f32,
+                                },
+                                scale_factor,
+                            )?
+                        }
+                        None => {}
+                    },
                     None => {}
                 }
             }
