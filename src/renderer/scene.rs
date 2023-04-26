@@ -60,6 +60,7 @@ pub struct Sphere {
 
 pub struct Scene {
     pub camera: Camera,
+    pub light: Vec3,
     pub screen_width: i32,
     pub screen_height: i32,
     pub focal_distance: f32,

@@ -90,6 +90,11 @@ impl Renderer {
         };
 
         let scene = Scene {
+            light: Vec3 {
+                x: -40.0,
+                y: 50.0,
+                z: 0.0,
+            },
             camera,
             focal_distance: 10.0,
             screen_width: 64,
