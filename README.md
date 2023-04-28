@@ -1,3 +1,11 @@
+## Ray tracer
+
+Small ray-tracer project adapted from [this post](https://matklad.github.io/2022/12/31/raytracer-construction-kit.html).
+
+SDL2 instructions followed from [here](https://blog.logrocket.com/using-sdl2-bindings-rust/).
+
+![./images/example.png](./images/example.png)
+
 ## Setup
 
 Install `sdl2`:
