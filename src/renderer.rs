@@ -74,7 +74,7 @@ impl Renderer {
                 y: 10.0,
                 z: 15.0,
             },
-            radius: 5.0,
+            radius: 10.0,
         };
 
         let spheres = [&sphere_1, &sphere_2];
@@ -163,14 +163,22 @@ impl Renderer {
                         // pick closer
                         let dist_plus = ray_plus * ray_plus;
                         let dist_minus = ray_minus * ray_minus;
-                        let t = if dist_minus < dist_plus {
+                        let t = if dist_minus > 0.0 && dist_plus > 0.0 {
+                            if dist_minus < dist_plus {
+                                t_minus
+                            } else {
+                                t_plus
+                            }
+                        } else if dist_plus > 0.0 {
+                            t_plus
+                        } else if dist_minus > 0.0 {
                             t_minus
                         } else {
                             t_plus
                         };
                         match min_t {
                             Some(value) => {
-                                if t < value {
+                                if t > 0.0 && t < value {
                                     min_t = Some(t);
                                     found_sphere_index = Some(index);
                                 }
