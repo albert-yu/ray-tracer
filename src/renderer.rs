@@ -193,9 +193,9 @@ impl Renderer {
                             // is orthogonal to tangent plane
 
                             let normal = collision_point - sphere.center;
-                            let unit_normal = normal.scale(1.0 / (normal * normal));
+                            let unit_normal = normal.scale(1.0 / (normal * normal).sqrt());
                             let collision_norm = light_to_collision
-                                .scale(1.0 / (light_to_collision * light_to_collision));
+                                .scale(1.0 / (light_to_collision * light_to_collision).sqrt());
 
                             let color_intensity_factor = unit_normal * collision_norm;
 
