@@ -65,14 +65,14 @@ impl Renderer {
                 y: 0.0,
                 z: 0.0,
             },
-            radius: 5.0,
+            radius: 10.0,
         };
 
         let sphere_2 = Sphere {
             center: Vec3 {
-                x: -10.0,
-                y: 10.0,
-                z: 15.0,
+                x: -20.0,
+                y: 20.0,
+                z: 25.0,
             },
             radius: 10.0,
         };
@@ -112,9 +112,9 @@ impl Renderer {
                 z: -200.0,
             },
             camera,
-            focal_distance: 10.0,
-            screen_width: 64,
-            screen_height: 48,
+            focal_distance: 80.0,
+            screen_width: 400,
+            screen_height: 300,
         };
 
         let (canvas_w, _canvas_h) = self.canvas.output_size()?;
