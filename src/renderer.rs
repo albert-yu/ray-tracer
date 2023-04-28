@@ -1,6 +1,6 @@
 use sdl2::{pixels::Color, rect::Rect, render::WindowCanvas, video::Window};
 
-mod scene;
+pub mod scene;
 use scene::{Sphere, Vec3};
 
 use crate::renderer::scene::{Camera, Scene};
@@ -58,7 +58,7 @@ impl Renderer {
         Ok(())
     }
 
-    fn draw_scene(&mut self) -> Result<(), String> {
+    fn draw_scene(&mut self, position: &Vec3) -> Result<(), String> {
         let sphere_1 = Sphere {
             center: Vec3 {
                 x: 0.0,
@@ -92,11 +92,7 @@ impl Renderer {
         ];
 
         let camera = Camera {
-            position: Vec3 {
-                x: 0.0,
-                y: 0.0,
-                z: -20.0,
-            },
+            position: *position,
             up: Vec3 {
                 x: 0.0,
                 y: 1.0,
@@ -228,13 +224,13 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn draw(&mut self) -> Result<(), String> {
+    pub fn draw(&mut self, position: &Vec3) -> Result<(), String> {
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.clear();
 
         self.canvas.set_draw_color(Color::WHITE);
 
-        self.draw_scene()?;
+        self.draw_scene(position)?;
         self.canvas.present();
 
         Ok(())
